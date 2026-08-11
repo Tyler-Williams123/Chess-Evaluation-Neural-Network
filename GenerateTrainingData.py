@@ -3,7 +3,7 @@ import chess.engine
 import torch
 
 chyler = chess.engine.SimpleEngine.popen_uci("./chyler")
-stockfish = chess.engine.SimpleEngine.popen_uci("/opt/homebrew/bin/stockfish")
+stockfish = chess.engine.SimpleEngine.popen_uci("./stockfish")
 
 inputs = []
 scores = []
@@ -20,7 +20,8 @@ for game in games:
     board = chess.Board(game)
     while(not board.is_game_over()): # need to handle mate scores
         info = stockfish.analyse(board, chess.engine.Limit(depth=14))
-        score = info["score"].white().score(mate_score=100000) / 100
+        score = torch.tensor(info["score"].white().score(mate_score=10))
+        # score = torch.tanh(score)
 
         castleRights = 0
         if board.has_kingside_castling_rights(chess.WHITE):
@@ -70,7 +71,7 @@ for game in games:
         board.push(move.move)
 
 inputs = torch.stack(inputs)
-scores = torch.tensor(scores)
+scores = torch.stack(scores)
 
 data = {
 "inputs": inputs,
